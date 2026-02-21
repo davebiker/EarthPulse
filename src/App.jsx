@@ -243,10 +243,13 @@ const EarthMap = ({ earthquakes, issPos }) => {
           const x = toX(lon), y = toY(lat);
           i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
         });
-        ctx.strokeStyle = "rgba(0,240,255,0.18)";
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(0,240,255,0.5)";
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = "#00f0ff";
+        ctx.shadowBlur = 4;
         ctx.stroke();
-        ctx.fillStyle = "rgba(0,240,255,0.04)";
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "rgba(0,240,255,0.08)";
         ctx.fill();
       });
 
