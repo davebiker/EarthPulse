@@ -171,26 +171,58 @@ const WorldClock = ({ cities }) => {
   );
 };
 
-import * as topojson from "topojson-client";
-
-// Will be loaded from CDN
-const WORLD_TOPO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
-
 const EarthMap = ({ earthquakes, issPos }) => {
   const canvasRef = useRef(null);
   const frameRef = useRef(0);
   const timeRef = useRef(0);
-  const worldRef = useRef(null);
+  const countriesRef = useRef(null);
 
-  // Load world data once
+  // Load map data once from public folder
   useEffect(() => {
-    fetch(WORLD_TOPO_URL)
+    const base = import.meta.env.BASE_URL || "/";
+    fetch(`${base}countries-110m.json`)
       .then(r => r.json())
       .then(topo => {
-        const countries = topojson.feature(topo, topo.objects.countries);
-        worldRef.current = countries;
+        // Manual TopoJSON decode — no library needed
+        const obj = topo.objects.countries;
+        const arcs = topo.arcs;
+        const scale = topo.transform?.scale || [1, 1];
+        const translate = topo.transform?.translate || [0, 0];
+
+        // Decode arc coordinates
+        const decodedArcs = arcs.map(arc => {
+          let x = 0, y = 0;
+          return arc.map(([dx, dy]) => {
+            x += dx; y += dy;
+            return [x * scale[0] + translate[0], y * scale[1] + translate[1]];
+          });
+        });
+
+        // Convert arc indices to coordinates
+        const arcToCoords = (idx) => {
+          if (idx >= 0) return decodedArcs[idx].slice();
+          return decodedArcs[~idx].slice().reverse();
+        };
+
+        const ringToCoords = (ring) => {
+          let coords = [];
+          ring.forEach(idx => { coords = coords.concat(arcToCoords(idx)); });
+          return coords;
+        };
+
+        const features = [];
+        (obj.geometries || []).forEach(geom => {
+          if (geom.type === "Polygon") {
+            features.push(geom.arcs.map(ring => ringToCoords(ring)));
+          } else if (geom.type === "MultiPolygon") {
+            geom.arcs.forEach(polygon => {
+              features.push(polygon.map(ring => ringToCoords(ring)));
+            });
+          }
+        });
+        countriesRef.current = features;
       })
-      .catch(() => {});
+      .catch(err => console.error("Map load error:", err));
   }, []);
 
   useEffect(() => {
@@ -226,25 +258,21 @@ const EarthMap = ({ earthquakes, issPos }) => {
       ctx.beginPath(); ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2); ctx.stroke();
       ctx.setLineDash([]);
 
-      // Draw countries from TopoJSON
-      if (worldRef.current) {
-        worldRef.current.features.forEach(feature => {
-          const geom = feature.geometry;
-          const rings = geom.type === "Polygon" ? [geom.coordinates] : geom.coordinates;
-          rings.forEach(polygon => {
-            polygon.forEach(ring => {
-              ctx.beginPath();
-              ring.forEach(([lon, lat], i) => {
-                const x = toX(lon), y = toY(lat);
-                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-              });
-              ctx.closePath();
-              ctx.fillStyle = "rgba(0,240,255,0.06)";
-              ctx.fill();
-              ctx.strokeStyle = "rgba(0,240,255,0.35)";
-              ctx.lineWidth = 0.8;
-              ctx.stroke();
+      // Draw countries
+      if (countriesRef.current) {
+        ctx.strokeStyle = "rgba(0,240,255,0.4)";
+        ctx.fillStyle = "rgba(0,240,255,0.07)";
+        ctx.lineWidth = 1;
+        countriesRef.current.forEach(polygon => {
+          polygon.forEach(ring => {
+            ctx.beginPath();
+            ring.forEach(([lon, lat], i) => {
+              const x = toX(lon), y = toY(lat);
+              i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
             });
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
           });
         });
       }
