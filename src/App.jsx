@@ -93,31 +93,87 @@ const SeismicWave = ({ data }) => {
     const draw = () => {
       ctx.clearRect(0, 0, w, h);
       offsetRef.current += 1.5;
+
+      const leftPad = 50;
+      const rightPad = 10;
+      const drawW = w - leftPad - rightPad;
+
+      // Y-axis magnitude labels
+      ctx.shadowBlur = 0;
+      ctx.font = `${Math.round(w * 0.012)}px 'JetBrains Mono', monospace`;
+      const magLevels = [0, 2, 4, 6, 8];
+      magLevels.forEach(mag => {
+        const ampUp = (mag / 9) * (h * 0.4);
+        // Positive amplitude (top)
+        if (mag > 0) {
+          const yTop = h / 2 - ampUp;
+          ctx.fillStyle = "rgba(0,240,255,0.3)";
+          ctx.textAlign = "right";
+          ctx.textBaseline = "middle";
+          ctx.fillText(`M${mag}`, leftPad - 8, yTop);
+          // Subtle guide line
+          ctx.strokeStyle = "rgba(0,240,255,0.06)";
+          ctx.lineWidth = 0.5;
+          ctx.setLineDash([3, 6]);
+          ctx.beginPath(); ctx.moveTo(leftPad, yTop); ctx.lineTo(w - rightPad, yTop); ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      });
+
+      // Center baseline
+      ctx.strokeStyle = "rgba(0,240,255,0.12)";
+      ctx.lineWidth = 0.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(leftPad, h / 2); ctx.lineTo(w - rightPad, h / 2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "rgba(0,240,255,0.2)";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillText("M0", leftPad - 8, h / 2);
+
+      // X-axis: show magnitude values of individual quakes
+      const step = Math.max(1, Math.floor(magnitudes.length / 8));
+      magnitudes.forEach((mag, i) => {
+        if (i % step !== 0) return;
+        const x = leftPad + (i / magnitudes.length) * drawW;
+        ctx.fillStyle = mag >= 5 ? "rgba(255,51,102,0.5)" : mag >= 3 ? "rgba(255,170,0,0.4)" : "rgba(0,240,255,0.25)";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText(mag.toFixed(1), x, h - 18);
+        // Tick mark
+        ctx.strokeStyle = "rgba(255,255,255,0.06)";
+        ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(x, h - 20); ctx.lineTo(x, h - 24); ctx.stroke();
+      });
+
+      // Cyan wave
       ctx.strokeStyle = "#00f0ff";
       ctx.lineWidth = 1.5;
       ctx.shadowColor = "#00f0ff";
       ctx.shadowBlur = 8;
       ctx.beginPath();
-      for (let x = 0; x < w; x++) {
-        const idx = Math.floor((x / w) * magnitudes.length);
+      for (let x = 0; x < drawW; x++) {
+        const idx = Math.floor((x / drawW) * magnitudes.length);
         const mag = magnitudes[idx] || 0;
         const amplitude = (mag / 9) * (h * 0.4);
         const frequency = 0.02 + mag * 0.005;
         const y = h / 2 + Math.sin((x + offsetRef.current) * frequency) * amplitude + Math.sin((x + offsetRef.current * 0.7) * 0.01) * 10;
-        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        x === 0 ? ctx.moveTo(leftPad + x, y) : ctx.lineTo(leftPad + x, y);
       }
       ctx.stroke();
+
+      // Red wave
       ctx.strokeStyle = "#ff3366";
       ctx.lineWidth = 1;
       ctx.shadowColor = "#ff3366";
       ctx.shadowBlur = 5;
       ctx.beginPath();
-      for (let x = 0; x < w; x++) {
-        const idx = Math.floor((x / w) * magnitudes.length);
+      for (let x = 0; x < drawW; x++) {
+        const idx = Math.floor((x / drawW) * magnitudes.length);
         const mag = magnitudes[idx] || 0;
         const amplitude = (mag / 9) * (h * 0.25);
         const y = h / 2 + Math.cos((x + offsetRef.current * 1.3) * 0.03) * amplitude;
-        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        x === 0 ? ctx.moveTo(leftPad + x, y) : ctx.lineTo(leftPad + x, y);
       }
       ctx.stroke();
       ctx.shadowBlur = 0;
@@ -775,7 +831,7 @@ export default function EarthPulseDashboard() {
 
           {/* Seismic Wave */}
           <DataCard title="SEISMOGRAF — VLNOVÁ AKTIVITA" icon={Activity} color="#00f0ff" span={1}>
-            <div style={{ height: 100, borderRadius: 8, overflow: "hidden" }}>
+            <div style={{ height: 130, borderRadius: 8, overflow: "hidden" }}>
               <SeismicWave data={eqFeatures} />
             </div>
           </DataCard>
