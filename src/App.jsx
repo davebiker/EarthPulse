@@ -55,9 +55,8 @@ const PulseRing = ({ color = "#00f0ff", size = 8, delay = 0 }) => (
   </div>
 );
 
-const DataCard = ({ title, icon: Icon, children, color = "#00f0ff", span = 1, row = 1 }) => (
-  <div style={{
-    gridColumn: `span ${span}`, gridRow: `span ${row}`,
+const DataCard = ({ title, icon: Icon, children, color = "#00f0ff", span = 1, row = 1, className = "" }) => (
+  <div className={`${span > 1 ? 'ep-span2' : ''} ${row > 1 ? 'ep-row2' : ''} ${className}`} style={{
     background: "linear-gradient(135deg, rgba(10,15,30,0.95), rgba(5,10,20,0.98))",
     border: `1px solid ${color}15`, borderRadius: 12,
     padding: "16px 18px", position: "relative", overflow: "hidden",
@@ -632,7 +631,7 @@ export default function EarthPulseDashboard() {
     <div style={{
       minHeight: "100vh",
       background: "radial-gradient(ellipse at 20% 50%, #0a1628 0%, #050a14 50%, #020408 100%)",
-      color: "#ffffff", fontFamily: "'Inter', 'Segoe UI', sans-serif", padding: 20,
+      color: "#ffffff", fontFamily: "'Inter', 'Segoe UI', sans-serif", padding: "20px clamp(12px, 3vw, 20px)",
       position: "relative", overflow: "hidden"
     }}>
       <style>{`
@@ -644,6 +643,36 @@ export default function EarthPulseDashboard() {
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #00f0ff20; border-radius: 2px; }
+        .ep-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; animation: fadeIn 0.6s ease-out; }
+        .ep-header-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; }
+        .ep-header-right { text-align: right; flex-shrink: 0; }
+        .ep-stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px; animation: fadeIn 0.6s ease-out 0.1s both; }
+        .ep-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; animation: fadeIn 0.6s ease-out 0.2s both; }
+        .ep-grid > * { grid-column: span 1; grid-row: span 1; }
+        .ep-span2 { grid-column: span 2; }
+        .ep-row2 { grid-row: span 2; }
+        .ep-footer { margin-top: 20px; display: flex; justify-content: space-between; align-items: center; opacity: 0.3; animation: fadeIn 0.6s ease-out 0.4s both; }
+        .ep-map-container { height: 240px; }
+        @media (max-width: 1024px) {
+          .ep-stats { grid-template-columns: repeat(3, 1fr); }
+          .ep-grid { grid-template-columns: 1fr 1fr; }
+          .ep-span2 { grid-column: span 2; }
+          .ep-row2 { grid-row: span 1; }
+        }
+        @media (max-width: 768px) {
+          .ep-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .ep-grid { grid-template-columns: 1fr; gap: 12px; }
+          .ep-grid > * { grid-column: span 1 !important; grid-row: span 1 !important; }
+          .ep-span2 { grid-column: span 1 !important; }
+          .ep-header { flex-direction: column; gap: 12px; }
+          .ep-header-right { text-align: left; }
+          .ep-footer { flex-direction: column; gap: 6px; align-items: flex-start; }
+          .ep-map-container { height: 200px; }
+        }
+        @media (max-width: 480px) {
+          .ep-stats { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+          .ep-map-container { height: 160px; }
+        }
       `}</style>
 
       {/* Ambient */}
@@ -656,9 +685,9 @@ export default function EarthPulseDashboard() {
       <div style={{ position: "relative", zIndex: 1, maxWidth: 1400, margin: "0 auto" }}>
 
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, animation: "fadeIn 0.6s ease-out" }}>
+        <div className="ep-header">
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
+            <div className="ep-header-meta">
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <PulseRing color="#00ff88" size={8} />
                 <span style={{ fontSize: 9, color: "#00ff88", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 2 }}>LIVE</span>
@@ -672,7 +701,7 @@ export default function EarthPulseDashboard() {
                 {dataSources} DATA STREAMS ACTIVE
               </span>
             </div>
-            <h1 style={{ fontSize: 28, fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: -0.5, lineHeight: 1.1 }}>
+            <h1 style={{ fontSize: "clamp(20px, 5vw, 28px)", fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: -0.5, lineHeight: 1.1 }}>
               <span style={{ color: "#00f0ff", textShadow: "0 0 20px #00f0ff30" }}>EARTH</span>
               <span style={{ color: "#ffffff" }}> PULSE</span>
               <span style={{ fontSize: 10, color: "#a855f7", marginLeft: 10, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 2, verticalAlign: "super" }}>v2.0</span>
@@ -681,7 +710,7 @@ export default function EarthPulseDashboard() {
               REAL-TIME PLANETARY MONITORING • SEISMIC • SPACE • WEATHER • CRYPTO
             </p>
           </div>
-          <div style={{ textAlign: "right" }}>
+          <div className="ep-header-right">
             <div style={{ fontSize: 9, color: "#ffffff30", fontFamily: "'JetBrains Mono', monospace" }}>POSLEDNÍ AKTUALIZACE</div>
             <div style={{ fontSize: 12, color: "#ffffff60", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>{lastUpdate?.toLocaleTimeString("cs-CZ") || "—"}</div>
             <div style={{ fontSize: 9, color: "#ffffff20", fontFamily: "'JetBrains Mono', monospace", marginTop: 4 }}>
@@ -691,7 +720,7 @@ export default function EarthPulseDashboard() {
         </div>
 
         {/* Stats Bar */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12, marginBottom: 20, animation: "fadeIn 0.6s ease-out 0.1s both" }}>
+        <div className="ep-stats">
           {[
             { label: "ZEMĚTŘESENÍ / 24H", value: eqFeatures.length, color: "#00f0ff", icon: Activity },
             { label: "NEJVYŠŠÍ MAG.", value: `M${maxMag}`, color: maxMag >= 5 ? "#ff3366" : "#ffaa00", icon: AlertTriangle },
@@ -717,11 +746,11 @@ export default function EarthPulseDashboard() {
         </div>
 
         {/* Main Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 16, animation: "fadeIn 0.6s ease-out 0.2s both" }}>
+        <div className="ep-grid">
 
           {/* Earthquake Map + ISS */}
           <DataCard title="GLOBÁLNÍ MAPA — ZEMĚTŘESENÍ + ISS TRACKER" icon={Globe} color="#00f0ff" span={2}>
-            <div style={{ height: 240, borderRadius: 8, overflow: "hidden", background: "rgba(0,10,20,0.5)", border: "1px solid rgba(0,240,255,0.08)" }}>
+            <div className="ep-map-container" style={{ borderRadius: 8, overflow: "hidden", background: "rgba(0,10,20,0.5)", border: "1px solid rgba(0,240,255,0.08)" }}>
               <EarthMap earthquakes={eqFeatures} issPos={issData ? { latitude: Number(issData.latitude), longitude: Number(issData.longitude) } : null} />
             </div>
             <div style={{ display: "flex", gap: 16, marginTop: 10, flexWrap: "wrap" }}>
@@ -876,7 +905,7 @@ export default function EarthPulseDashboard() {
         </div>
 
         {/* Footer */}
-        <div style={{ marginTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center", opacity: 0.3, animation: "fadeIn 0.6s ease-out 0.4s both" }}>
+        <div className="ep-footer">
           <div style={{ fontSize: 9, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>
             EARTH PULSE v2.0 • USGS • OPEN-METEO • NOAA SWPC • ISS API • COINGECKO
           </div>
