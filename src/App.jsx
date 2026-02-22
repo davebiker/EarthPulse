@@ -69,8 +69,8 @@ const DataCard = ({ title, icon: Icon, children, color = "#00f0ff", span = 1, ro
     <ScanLine />
     <div style={{ position: "relative", zIndex: 2 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-        <Icon size={14} style={{ color, filter: `drop-shadow(0 0 4px ${color}60)` }} />
-        <span style={{ color: `${color}90`, fontSize: 10, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 2, textTransform: "uppercase" }}>{title}</span>
+        <Icon size={14} style={{ color, filter: `drop-shadow(0 0 4px ${color}80)` }} />
+        <span style={{ color: `${color}`, fontSize: 11, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 2, textTransform: "uppercase" }}>{title}</span>
       </div>
       {children}
     </div>
@@ -100,19 +100,19 @@ const SeismicWave = ({ data }) => {
 
       // Y-axis magnitude labels
       ctx.shadowBlur = 0;
-      ctx.font = `${Math.round(w * 0.012)}px 'JetBrains Mono', monospace`;
+      ctx.font = `${Math.max(14, Math.round(w * 0.014))}px 'JetBrains Mono', monospace`;
       const magLevels = [0, 2, 4, 6, 8];
       magLevels.forEach(mag => {
         const ampUp = (mag / 9) * (h * 0.4);
         // Positive amplitude (top)
         if (mag > 0) {
           const yTop = h / 2 - ampUp;
-          ctx.fillStyle = "rgba(0,240,255,0.3)";
+          ctx.fillStyle = "rgba(0,240,255,0.7)";
           ctx.textAlign = "right";
           ctx.textBaseline = "middle";
           ctx.fillText(`M${mag}`, leftPad - 8, yTop);
           // Subtle guide line
-          ctx.strokeStyle = "rgba(0,240,255,0.06)";
+          ctx.strokeStyle = "rgba(0,240,255,0.12)";
           ctx.lineWidth = 0.5;
           ctx.setLineDash([3, 6]);
           ctx.beginPath(); ctx.moveTo(leftPad, yTop); ctx.lineTo(w - rightPad, yTop); ctx.stroke();
@@ -126,7 +126,7 @@ const SeismicWave = ({ data }) => {
       ctx.setLineDash([4, 4]);
       ctx.beginPath(); ctx.moveTo(leftPad, h / 2); ctx.lineTo(w - rightPad, h / 2); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = "rgba(0,240,255,0.2)";
+      ctx.fillStyle = "rgba(0,240,255,0.6)";
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
       ctx.fillText("M0", leftPad - 8, h / 2);
@@ -136,7 +136,7 @@ const SeismicWave = ({ data }) => {
       magnitudes.forEach((mag, i) => {
         if (i % step !== 0) return;
         const x = leftPad + (i / magnitudes.length) * drawW;
-        ctx.fillStyle = mag >= 5 ? "rgba(255,51,102,0.5)" : mag >= 3 ? "rgba(255,170,0,0.4)" : "rgba(0,240,255,0.25)";
+        ctx.fillStyle = mag >= 5 ? "rgba(255,51,102,0.9)" : mag >= 3 ? "rgba(255,170,0,0.8)" : "rgba(0,240,255,0.6)";
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
         ctx.fillText(mag.toFixed(1), x, h - 18);
@@ -215,11 +215,11 @@ const WorldClock = ({ cities }) => {
           background: i === 0 ? "rgba(0,240,255,0.08)" : "rgba(255,255,255,0.02)",
           border: i === 0 ? "1px solid rgba(0,240,255,0.2)" : "1px solid rgba(255,255,255,0.05)",
         }}>
-          <div style={{ fontSize: 9, color: "#ffffff50", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1.5, marginBottom: 4 }}>{c.name.toUpperCase()}</div>
+          <div style={{ fontSize: 11, color: "#ffffff90", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1.5, marginBottom: 4 }}>{c.name.toUpperCase()}</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: i === 0 ? "#00f0ff" : "#ffffff", fontFamily: "'JetBrains Mono', monospace", textShadow: i === 0 ? "0 0 10px #00f0ff40" : "none" }}>
             {times[c.name]?.time || "--:--:--"}
           </div>
-          <div style={{ fontSize: 9, color: "#ffffff40", marginTop: 2 }}>{times[c.name]?.date}</div>
+          <div style={{ fontSize: 11, color: "#ffffff80", marginTop: 2 }}>{times[c.name]?.date}</div>
         </div>
       ))}
     </div>
@@ -410,7 +410,7 @@ const EarthMap = ({ earthquakes, issPos }) => {
 };
 
 const ISSTracker = ({ issData }) => {
-  if (!issData) return <div style={{ fontSize: 11, color: "#ffffff30", textAlign: "center", padding: 20 }}>Načítání ISS dat...</div>;
+  if (!issData) return <div style={{ fontSize: 11, color: "#ffffff70", textAlign: "center", padding: 20 }}>Načítání ISS dat...</div>;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -418,7 +418,7 @@ const ISSTracker = ({ issData }) => {
           <Rocket size={22} style={{ color: "#a855f7", filter: "drop-shadow(0 0 6px #a855f780)" }} />
         </div>
         <div>
-          <div style={{ fontSize: 10, color: "#ffffff50", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>RYCHLOST</div>
+          <div style={{ fontSize: 10, color: "#ffffff90", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>RYCHLOST</div>
           <div style={{ fontSize: 20, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: "#a855f7", textShadow: "0 0 15px #a855f730" }}>
             {issData.velocity ? `${Number(issData.velocity).toFixed(0)} km/h` : "—"}
           </div>
@@ -432,8 +432,8 @@ const ISSTracker = ({ issData }) => {
           { label: "VIDITELNOST", value: issData.visibility === "daylight" ? "Denní" : "Noční" },
         ].map(item => (
           <div key={item.label} style={{ background: "rgba(168,85,247,0.05)", borderRadius: 6, padding: "8px 10px", border: "1px solid rgba(168,85,247,0.08)" }}>
-            <div style={{ fontSize: 8, color: "#ffffff40", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>{item.label}</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#ffffffcc", marginTop: 2 }}>{item.value}</div>
+            <div style={{ fontSize: 10, color: "#ffffff80", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>{item.label}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#ffffffe6", marginTop: 2 }}>{item.value}</div>
           </div>
         ))}
       </div>
@@ -442,7 +442,7 @@ const ISSTracker = ({ issData }) => {
 };
 
 const CryptoTicker = ({ crypto, histories }) => {
-  if (!crypto) return <div style={{ fontSize: 11, color: "#ffffff30", textAlign: "center", padding: 20 }}>Načítání krypto dat...</div>;
+  if (!crypto) return <div style={{ fontSize: 11, color: "#ffffff70", textAlign: "center", padding: 20 }}>Načítání krypto dat...</div>;
 
   const coins = [
     { id: "bitcoin", symbol: "BTC", color: "#f7931a", icon: "₿" },
@@ -473,7 +473,7 @@ const CryptoTicker = ({ crypto, histories }) => {
                 }}>{coin.icon}</div>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: "#ffffffdd" }}>{coin.symbol}</div>
-                  <div style={{ fontSize: 8, color: "#ffffff40", fontFamily: "'JetBrains Mono', monospace" }}>{coin.id.toUpperCase()}</div>
+                  <div style={{ fontSize: 10, color: "#ffffff80", fontFamily: "'JetBrains Mono', monospace" }}>{coin.id.toUpperCase()}</div>
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>
@@ -528,7 +528,7 @@ const SolarWeather = ({ solarData, solarWind, solarFlare }) => {
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <div style={{ display: "flex", alignItems: "flex-end", gap: 12 }}>
         <div>
-          <div style={{ fontSize: 9, color: "#ffffff40", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>Kp INDEX</div>
+          <div style={{ fontSize: 11, color: "#ffffff80", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>Kp INDEX</div>
           <div style={{ fontSize: 38, fontWeight: 800, fontFamily: "'Outfit', sans-serif", color: kpColor, textShadow: `0 0 25px ${kpColor}40`, lineHeight: 1 }}>
             {currentKp.toFixed(1)}
           </div>
@@ -553,7 +553,7 @@ const SolarWeather = ({ solarData, solarWind, solarFlare }) => {
                 borderRadius: "3px 3px 0 0", boxShadow: `0 0 8px ${barColor}30`,
                 opacity: d.observed === "observed" ? 1 : 0.5,
               }} />
-              <span style={{ fontSize: 7, color: "#ffffff30", fontFamily: "'JetBrains Mono', monospace" }}>
+              <span style={{ fontSize: 10, color: "#ffffff70", fontFamily: "'JetBrains Mono', monospace" }}>
                 {d.time.slice(-5)}
               </span>
             </div>
@@ -563,12 +563,12 @@ const SolarWeather = ({ solarData, solarWind, solarFlare }) => {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 2 }}>
         <div style={{ background: "rgba(255,170,0,0.05)", borderRadius: 6, padding: "8px 10px", border: "1px solid rgba(255,170,0,0.08)" }}>
-          <div style={{ fontSize: 8, color: "#ffffff40", fontFamily: "'JetBrains Mono', monospace" }}>SLUNEČNÍ VÍTR Bt</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: "#ffaa00", marginTop: 2 }}>{windBt} <span style={{ fontSize: 9, color: "#ffffff40" }}>nT</span></div>
+          <div style={{ fontSize: 10, color: "#ffffff80", fontFamily: "'JetBrains Mono', monospace" }}>SLUNEČNÍ VÍTR Bt</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#ffaa00", marginTop: 2 }}>{windBt} <span style={{ fontSize: 11, color: "#ffffff80" }}>nT</span></div>
         </div>
         <div style={{ background: "rgba(255,170,0,0.05)", borderRadius: 6, padding: "8px 10px", border: "1px solid rgba(255,170,0,0.08)" }}>
-          <div style={{ fontSize: 8, color: "#ffffff40", fontFamily: "'JetBrains Mono', monospace" }}>RÁDIOVÝ FLUX</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: "#ffaa00", marginTop: 2 }}>{flux} <span style={{ fontSize: 9, color: "#ffffff40" }}>SFU</span></div>
+          <div style={{ fontSize: 10, color: "#ffffff80", fontFamily: "'JetBrains Mono', monospace" }}>RÁDIOVÝ FLUX</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#ffaa00", marginTop: 2 }}>{flux} <span style={{ fontSize: 11, color: "#ffffff80" }}>SFU</span></div>
         </div>
       </div>
     </div>
@@ -692,7 +692,7 @@ export default function EarthPulseDashboard() {
     }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;600;700;800&display=swap');
-        @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(3); opacity: 0; } }
+        @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.85; } 100% { transform: scale(3); opacity: 0; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -746,14 +746,14 @@ export default function EarthPulseDashboard() {
             <div className="ep-header-meta">
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <PulseRing color="#00ff88" size={8} />
-                <span style={{ fontSize: 9, color: "#00ff88", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 2 }}>LIVE</span>
+                <span style={{ fontSize: 11, color: "#00ff88", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 2 }}>LIVE</span>
               </div>
-              <span style={{ fontSize: 9, color: "#ffffff20" }}>|</span>
-              <span style={{ fontSize: 9, color: "#ffffff30", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>
+              <span style={{ fontSize: 11, color: "#ffffff90" }}>|</span>
+              <span style={{ fontSize: 11, color: "#ffffff70", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>
                 UPTIME {formatUptime(uptime)}
               </span>
-              <span style={{ fontSize: 9, color: "#ffffff20" }}>|</span>
-              <span style={{ fontSize: 9, color: "#ffffff30", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>
+              <span style={{ fontSize: 11, color: "#ffffff90" }}>|</span>
+              <span style={{ fontSize: 11, color: "#ffffff70", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>
                 {dataSources} DATA STREAMS ACTIVE
               </span>
             </div>
@@ -762,14 +762,14 @@ export default function EarthPulseDashboard() {
               <span style={{ color: "#ffffff" }}> PULSE</span>
               <span style={{ fontSize: 10, color: "#a855f7", marginLeft: 10, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 2, verticalAlign: "super" }}>v2.0</span>
             </h1>
-            <p style={{ fontSize: 10, color: "#ffffff40", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 2, marginTop: 4 }}>
+            <p style={{ fontSize: 10, color: "#ffffff80", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 2, marginTop: 4 }}>
               REAL-TIME PLANETARY MONITORING • SEISMIC • SPACE • WEATHER • CRYPTO
             </p>
           </div>
           <div className="ep-header-right">
-            <div style={{ fontSize: 9, color: "#ffffff30", fontFamily: "'JetBrains Mono', monospace" }}>POSLEDNÍ AKTUALIZACE</div>
-            <div style={{ fontSize: 12, color: "#ffffff60", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>{lastUpdate?.toLocaleTimeString("cs-CZ") || "—"}</div>
-            <div style={{ fontSize: 9, color: "#ffffff20", fontFamily: "'JetBrains Mono', monospace", marginTop: 4 }}>
+            <div style={{ fontSize: 11, color: "#ffffff70", fontFamily: "'JetBrains Mono', monospace" }}>POSLEDNÍ AKTUALIZACE</div>
+            <div style={{ fontSize: 12, color: "#ffffffbb", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>{lastUpdate?.toLocaleTimeString("cs-CZ") || "—"}</div>
+            <div style={{ fontSize: 11, color: "#ffffff90", fontFamily: "'JetBrains Mono', monospace", marginTop: 4 }}>
               {eqFeatures.length} QUAKES • ISS TRACKING • {errors.length === 0 ? "ALL OK" : `${errors.length} WARN`}
             </div>
           </div>
@@ -792,8 +792,8 @@ export default function EarthPulseDashboard() {
               <ScanLine />
               <div style={{ position: "relative", zIndex: 2 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                  <s.icon size={10} style={{ color: s.color, opacity: 0.6 }} />
-                  <span style={{ fontSize: 7, color: "#ffffff40", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1.5 }}>{s.label}</span>
+                  <s.icon size={10} style={{ color: s.color, opacity: 0.85 }} />
+                  <span style={{ fontSize: 10, color: "#ffffff80", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1.5 }}>{s.label}</span>
                 </div>
                 <span style={{ fontSize: 20, fontFamily: "'Outfit', sans-serif", fontWeight: 700, color: s.color, textShadow: `0 0 10px ${s.color}40` }}>{s.value}</span>
               </div>
@@ -818,7 +818,7 @@ export default function EarthPulseDashboard() {
               ].map(l => (
                 <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <div style={{ width: 8, height: 8, borderRadius: "50%", background: l.color, boxShadow: `0 0 6px ${l.color}` }} />
-                  <span style={{ fontSize: 9, color: "#ffffff50", fontFamily: "'JetBrains Mono', monospace" }}>{l.label}</span>
+                  <span style={{ fontSize: 11, color: "#ffffff90", fontFamily: "'JetBrains Mono', monospace" }}>{l.label}</span>
                 </div>
               ))}
             </div>
@@ -846,9 +846,30 @@ export default function EarthPulseDashboard() {
             <SolarWeather solarData={solarData} solarWind={solarWind} solarFlare={solarFlare} />
           </DataCard>
 
-          {/* Crypto */}
-          <DataCard title="KRYPTOMĚNY — LIVE" icon={DollarSign} color="#f7931a" span={1} row={2}>
-            <CryptoTicker crypto={crypto} histories={cryptoHistories} />
+          {/* Recent Significant Earthquakes */}
+          <DataCard title="VÝZNAMNÁ ZEMĚTŘESENÍ" icon={AlertTriangle} color="#ff3366" span={1} row={2}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 200, overflowY: "auto" }}>
+              {(significantQuakes.length > 0 ? significantQuakes : eqFeatures.slice(0, 6)).slice(0, 8).map((q, i) => {
+                const mag = q.properties.mag;
+                const color = mag >= 5 ? "#ff3366" : mag >= 3 ? "#ffaa00" : "#00f0ff";
+                const time = new Date(q.properties.time);
+                return (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", gap: 12, padding: "8px 10px",
+                    background: "rgba(255,255,255,0.02)", borderRadius: 6, borderLeft: `3px solid ${color}`
+                  }}>
+                    <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color, minWidth: 50, textAlign: "center" }}>{mag?.toFixed(1)}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 11, color: "#ffffffe6", lineHeight: 1.3 }}>{q.properties.place}</div>
+                      <div style={{ fontSize: 11, color: "#ffffff80", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>
+                        {time.toLocaleString("cs-CZ", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}
+                      </div>
+                    </div>
+                    <PulseRing color={color} size={6} delay={i * 0.3} />
+                  </div>
+                );
+              })}
+            </div>
           </DataCard>
 
           {/* Weather Prague */}
@@ -859,10 +880,10 @@ export default function EarthPulseDashboard() {
                   <div style={{ fontSize: 36, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: "#ffaa00", textShadow: "0 0 20px #ffaa0030", lineHeight: 1 }}>
                     {currentWeather.temperature_2m ?? "—"}°
                   </div>
-                  <div style={{ fontSize: 11, color: "#ffffff60", marginTop: 4 }}>{weatherDesc}</div>
+                  <div style={{ fontSize: 11, color: "#ffffffbb", marginTop: 4 }}>{weatherDesc}</div>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 10, color: "#ffffff40" }}>Pocitově</div>
+                  <div style={{ fontSize: 10, color: "#ffffff80" }}>Pocitově</div>
                   <div style={{ fontSize: 16, fontWeight: 600, color: "#ffffff80" }}>{currentWeather.apparent_temperature ?? "—"}°</div>
                 </div>
               </div>
@@ -873,9 +894,9 @@ export default function EarthPulseDashboard() {
                   { icon: Zap, label: "Tlak", value: `${currentWeather.surface_pressure ? Math.round(currentWeather.surface_pressure) : "—"} hPa` },
                 ].map(w => (
                   <div key={w.label} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "8px 6px", textAlign: "center" }}>
-                    <w.icon size={12} style={{ color: "#ffaa00", opacity: 0.6, margin: "0 auto 4px" }} />
-                    <div style={{ fontSize: 8, color: "#ffffff40", marginBottom: 2 }}>{w.label}</div>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: "#ffffffcc" }}>{w.value}</div>
+                    <w.icon size={12} style={{ color: "#ffaa00", opacity: 0.85, margin: "0 auto 4px" }} />
+                    <div style={{ fontSize: 10, color: "#ffffff80", marginBottom: 2 }}>{w.label}</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: "#ffffffe6" }}>{w.value}</div>
                   </div>
                 ))}
               </div>
@@ -897,9 +918,9 @@ export default function EarthPulseDashboard() {
                       <stop offset="95%" stopColor="#4488ff" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="h" tick={{ fontSize: 8, fill: "#ffffff30" }} axisLine={false} tickLine={false} interval={5} />
+                  <XAxis dataKey="h" tick={{ fontSize: 10, fill: "#ffffff70" }} axisLine={false} tickLine={false} interval={5} />
                   <YAxis hide domain={["auto", "auto"]} />
-                  <Tooltip contentStyle={{ background: "#0a1628", border: "1px solid #ffffff20", borderRadius: 6, fontSize: 10, color: "#ffffffcc" }} />
+                  <Tooltip contentStyle={{ background: "#0a1628", border: "1px solid #ffffff90", borderRadius: 6, fontSize: 10, color: "#ffffffe6" }} />
                   <Area type="monotone" dataKey="t" stroke="#ffaa00" fill="url(#tempGrad)" strokeWidth={2} dot={false} name="Teplota °C" />
                   <Area type="monotone" dataKey="p" stroke="#4488ff" fill="url(#precipGrad2)" strokeWidth={1} dot={false} name="Srážky %" />
                 </AreaChart>
@@ -926,46 +947,25 @@ export default function EarthPulseDashboard() {
                 { label: "EU AQI", value: aqiValue, unit: "index" },
               ].map(m => (
                 <div key={m.label} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "6px 8px" }}>
-                  <div style={{ fontSize: 8, color: "#ffffff40" }}>{m.label}</div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#ffffffcc" }}>{m.value != null ? Math.round(m.value) : "—"} <span style={{ fontSize: 8, color: "#ffffff40" }}>{m.unit}</span></div>
+                  <div style={{ fontSize: 10, color: "#ffffff80" }}>{m.label}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#ffffffe6" }}>{m.value != null ? Math.round(m.value) : "—"} <span style={{ fontSize: 10, color: "#ffffff80" }}>{m.unit}</span></div>
                 </div>
               ))}
             </div>
           </DataCard>
 
-          {/* Recent Significant Earthquakes */}
-          <DataCard title="VÝZNAMNÁ ZEMĚTŘESENÍ" icon={AlertTriangle} color="#ff3366" span={2}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 160, overflowY: "auto" }}>
-              {(significantQuakes.length > 0 ? significantQuakes : eqFeatures.slice(0, 6)).slice(0, 8).map((q, i) => {
-                const mag = q.properties.mag;
-                const color = mag >= 5 ? "#ff3366" : mag >= 3 ? "#ffaa00" : "#00f0ff";
-                const time = new Date(q.properties.time);
-                return (
-                  <div key={i} style={{
-                    display: "flex", alignItems: "center", gap: 12, padding: "8px 10px",
-                    background: "rgba(255,255,255,0.02)", borderRadius: 6, borderLeft: `3px solid ${color}`
-                  }}>
-                    <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color, minWidth: 50, textAlign: "center" }}>{mag?.toFixed(1)}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, color: "#ffffffcc", lineHeight: 1.3 }}>{q.properties.place}</div>
-                      <div style={{ fontSize: 9, color: "#ffffff40", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>
-                        {time.toLocaleString("cs-CZ", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}
-                      </div>
-                    </div>
-                    <PulseRing color={color} size={6} delay={i * 0.3} />
-                  </div>
-                );
-              })}
-            </div>
+          {/* Crypto */}
+          <DataCard title="KRYPTOMĚNY — LIVE" icon={DollarSign} color="#f7931a" span={1}>
+            <CryptoTicker crypto={crypto} histories={cryptoHistories} />
           </DataCard>
         </div>
 
         {/* Footer */}
         <div className="ep-footer">
-          <div style={{ fontSize: 9, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>
+          <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>
             EARTH PULSE v2.0 • USGS • OPEN-METEO • NOAA SWPC • ISS API • COINGECKO
           </div>
-          <div style={{ fontSize: 9, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>
+          <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>
             ISS: 5s REFRESH • DATA: 120s • ŠKODA X INNOVATION LAB
           </div>
         </div>
