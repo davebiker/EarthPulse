@@ -591,18 +591,42 @@ export default function EarthPulseDashboard() {
   const [errors, setErrors] = useState([]);
   const [uptime, setUptime] = useState(0);
   const [dataSources, setDataSources] = useState(0);
+  const [city, setCity] = useState({ name: "Praha", lat: 50.0755, lon: 14.4378 });
+  const [citySearch, setCitySearch] = useState("");
+  const [cityLoading, setCityLoading] = useState(false);
+  const cityRef = useRef(city);
+  cityRef.current = city;
+
+  const searchCity = useCallback(async (query) => {
+    if (!query || query.length < 2) return;
+    setCityLoading(true);
+    try {
+      const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=cs`);
+      const d = await r.json();
+      if (d.results && d.results.length > 0) {
+        const c = d.results[0];
+        const newCity = { name: c.name, lat: c.latitude, lon: c.longitude };
+        setCity(newCity);
+        // Refresh weather for new city
+        try { const wr = await fetch(APIS.weather(newCity.lat, newCity.lon)); const wd = await wr.json(); setWeather(wd); } catch {}
+        try { const ar = await fetch(APIS.airQuality(newCity.lat, newCity.lon)); const ad = await ar.json(); setAirQuality(ad); } catch {}
+      }
+    } catch {}
+    setCityLoading(false);
+  }, []);
 
   const fetchData = useCallback(async () => {
     const errs = [];
     let sources = 0;
+    const c = cityRef.current;
 
     setLoadingPhase("Seismická data USGS...");
     try { const r = await fetch(APIS.earthquakes); const d = await r.json(); setEarthquakes(d); sources++; } catch { errs.push("Seismic"); }
 
     setLoadingPhase("Meteorologická data...");
-    try { const r = await fetch(APIS.weather(50.0755, 14.4378)); const d = await r.json(); setWeather(d); sources++; } catch { errs.push("Weather"); }
+    try { const r = await fetch(APIS.weather(c.lat, c.lon)); const d = await r.json(); setWeather(d); sources++; } catch { errs.push("Weather"); }
 
-    try { const r = await fetch(APIS.airQuality(50.0755, 14.4378)); const d = await r.json(); setAirQuality(d); sources++; } catch { errs.push("AirQuality"); }
+    try { const r = await fetch(APIS.airQuality(c.lat, c.lon)); const d = await r.json(); setAirQuality(d); sources++; } catch { errs.push("AirQuality"); }
 
     setLoadingPhase("Pozice ISS...");
     try { const r = await fetch(APIS.iss); const d = await r.json(); setIssData(d); sources++; } catch { errs.push("ISS"); }
@@ -780,7 +804,7 @@ export default function EarthPulseDashboard() {
           {[
             { label: "ZEMĚTŘESENÍ / 24H", value: eqFeatures.length, color: "#00f0ff", icon: Activity },
             { label: "NEJVYŠŠÍ MAG.", value: `M${maxMag}`, color: maxMag >= 5 ? "#ff3366" : "#ffaa00", icon: AlertTriangle },
-            { label: "TEPLOTA PRAHA", value: `${currentWeather.temperature_2m ?? "—"}°C`, color: "#ffaa00", icon: Thermometer },
+            { label: `TEPLOTA ${city.name.toUpperCase()}`, value: `${currentWeather.temperature_2m ?? "—"}°C`, color: "#ffaa00", icon: Thermometer },
             { label: "ISS RYCHLOST", value: issData ? `${Number(issData.velocity).toFixed(0)} km/h` : "—", color: "#a855f7", icon: Rocket },
             { label: "Kp INDEX", value: solarData?.[1]?.[1] || "—", color: "#ff8800", icon: Sun },
             { label: "BITCOIN", value: btcPrice ? `$${(btcPrice / 1000).toFixed(1)}k` : "—", color: "#f7931a", icon: DollarSign },
@@ -804,6 +828,8 @@ export default function EarthPulseDashboard() {
         {/* Main Grid */}
         <div className="ep-grid">
 
+          {/* ═══ SEISMIKA ═══ */}
+
           {/* Earthquake Map + ISS */}
           <DataCard title="GLOBÁLNÍ MAPA — ZEMĚTŘESENÍ + ISS TRACKER" icon={Globe} color="#00f0ff" span={2}>
             <div className="ep-map-container" style={{ borderRadius: 8, overflow: "hidden", background: "rgba(0,10,20,0.5)", border: "1px solid rgba(0,240,255,0.08)" }}>
@@ -824,29 +850,7 @@ export default function EarthPulseDashboard() {
             </div>
           </DataCard>
 
-          {/* World Clock */}
-          <DataCard title="SVĚTOVÝ ČAS" icon={Globe} color="#00f0ff">
-            <WorldClock cities={CITIES} />
-          </DataCard>
-
-          {/* Seismic Wave */}
-          <DataCard title="SEISMOGRAF — VLNOVÁ AKTIVITA" icon={Activity} color="#00f0ff" span={1}>
-            <div style={{ height: 130, borderRadius: 8, overflow: "hidden" }}>
-              <SeismicWave data={eqFeatures} />
-            </div>
-          </DataCard>
-
-          {/* ISS Tracker */}
-          <DataCard title="ISS — MEZINÁRODNÍ VESMÍRNÁ STANICE" icon={Satellite} color="#a855f7">
-            <ISSTracker issData={issData} />
-          </DataCard>
-
-          {/* Solar Weather */}
-          <DataCard title="SLUNEČNÍ POČASÍ — NOAA SWPC" icon={Sun} color="#ff8800">
-            <SolarWeather solarData={solarData} solarWind={solarWind} solarFlare={solarFlare} />
-          </DataCard>
-
-          {/* Recent Significant Earthquakes */}
+          {/* Significant Earthquakes */}
           <DataCard title="VÝZNAMNÁ ZEMĚTŘESENÍ" icon={AlertTriangle} color="#ff3366" span={1} row={2}>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 200, overflowY: "auto" }}>
               {(significantQuakes.length > 0 ? significantQuakes : eqFeatures.slice(0, 6)).slice(0, 8).map((q, i) => {
@@ -872,9 +876,46 @@ export default function EarthPulseDashboard() {
             </div>
           </DataCard>
 
-          {/* Weather Prague */}
-          <DataCard title="POČASÍ PRAHA" icon={CloudRain} color="#ffaa00">
+          {/* Seismograph */}
+          <DataCard title="SEISMOGRAF — VLNOVÁ AKTIVITA" icon={Activity} color="#00f0ff" span={1}>
+            <div style={{ height: 130, borderRadius: 8, overflow: "hidden" }}>
+              <SeismicWave data={eqFeatures} />
+            </div>
+          </DataCard>
+
+          {/* ISS Tracker */}
+          <DataCard title="ISS — MEZINÁRODNÍ VESMÍRNÁ STANICE" icon={Satellite} color="#a855f7">
+            <ISSTracker issData={issData} />
+          </DataCard>
+
+          {/* ═══ POČASÍ & OVZDUŠÍ ═══ */}
+
+          {/* Weather */}
+          <DataCard title={`POČASÍ — ${city.name.toUpperCase()}`} icon={CloudRain} color="#ffaa00">
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", gap: 6 }}>
+                <input
+                  type="text"
+                  value={citySearch}
+                  onChange={e => setCitySearch(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") { searchCity(citySearch); setCitySearch(""); } }}
+                  placeholder="Hledat město..."
+                  style={{
+                    flex: 1, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,170,0,0.25)",
+                    borderRadius: 6, padding: "6px 10px", color: "#fff", fontSize: 12,
+                    fontFamily: "'JetBrains Mono', monospace", outline: "none"
+                  }}
+                />
+                <button
+                  onClick={() => { searchCity(citySearch); setCitySearch(""); }}
+                  style={{
+                    background: cityLoading ? "rgba(255,170,0,0.1)" : "rgba(255,170,0,0.15)",
+                    border: "1px solid rgba(255,170,0,0.3)", borderRadius: 6, padding: "6px 10px",
+                    color: "#ffaa00", fontSize: 11, cursor: "pointer", fontFamily: "'JetBrains Mono', monospace",
+                    whiteSpace: "nowrap"
+                  }}
+                >{cityLoading ? "..." : "🔍"}</button>
+              </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
                 <div>
                   <div style={{ fontSize: 36, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: "#ffaa00", textShadow: "0 0 20px #ffaa0030", lineHeight: 1 }}>
@@ -929,7 +970,7 @@ export default function EarthPulseDashboard() {
           </DataCard>
 
           {/* Air Quality */}
-          <DataCard title="KVALITA OVZDUŠÍ PRAHA" icon={Eye} color={aqiColor}>
+          <DataCard title={`KVALITA OVZDUŠÍ — ${city.name.toUpperCase()}`} icon={Eye} color={aqiColor}>
             <div style={{ display: "flex", alignItems: "flex-end", gap: 12, marginBottom: 8 }}>
               <div style={{ fontSize: 36, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: aqiColor, textShadow: `0 0 20px ${aqiColor}30`, lineHeight: 1 }}>
                 {aqiValue ?? "—"}
@@ -952,6 +993,18 @@ export default function EarthPulseDashboard() {
                 </div>
               ))}
             </div>
+          </DataCard>
+
+          {/* ═══ VESMÍR & OSTATNÍ ═══ */}
+
+          {/* Solar Weather */}
+          <DataCard title="SLUNEČNÍ POČASÍ — NOAA SWPC" icon={Sun} color="#ff8800">
+            <SolarWeather solarData={solarData} solarWind={solarWind} solarFlare={solarFlare} />
+          </DataCard>
+
+          {/* World Clock */}
+          <DataCard title="SVĚTOVÝ ČAS" icon={Globe} color="#00f0ff">
+            <WorldClock cities={CITIES} />
           </DataCard>
 
           {/* Crypto */}
